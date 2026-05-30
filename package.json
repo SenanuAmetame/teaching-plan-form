@@ -1,0 +1,20 @@
+{
+  "name": "teaching-plan-form",
+  "version": "1.0.0",
+  "description": "Open source teaching plan submission form with admin dashboard",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "archiver": "^7.0.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-basic-auth": "^1.2.1",
+    "multer": "^1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}

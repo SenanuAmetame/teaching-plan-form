@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teaching Plan</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-light: #eff6ff;
+      --success: #16a34a;
+      --success-bg: #f0fdf4;
+      --success-border: #bbf7d0;
+      --error: #dc2626;
+      --error-bg: #fef2f2;
+      --error-border: #fecaca;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --text: #1e293b;
+      --muted: #64748b;
+      --border: #e2e8f0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      color: var(--text);
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      padding: 48px;
+      width: 100%;
+      max-width: 520px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--primary-light);
+      color: var(--primary);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 99px;
+      margin-bottom: 20px;
+      letter-spacing: 0.02em;
+    }
+
+    h1 {
+      font-size: 30px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.5px;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 32px 0;
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .required {
+      color: var(--error);
+      margin-left: 2px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 15px;
+      color: var(--text);
+      background: #fff;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    input[type="text"]::placeholder { color: #94a3b8; }
+
+    input[type="text"]:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+    }
+
+    /* File upload zone */
+    .file-zone {
+      position: relative;
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      padding: 32px 20px;
+      text-align: center;
+      cursor: pointer;
+      background: #fafafa;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .file-zone:hover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .file-zone.drag-over {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+    }
+
+    .file-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .file-zone-icon { font-size: 40px; margin-bottom: 12px; }
+
+    .file-zone-label {
+      font-size: 15px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .file-zone-label strong { color: var(--primary); }
+
+    .file-zone-hint {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+
+    /* Selected file preview */
+    .file-preview {
+      display: none;
+      align-items: center;
+      gap: 14px;
+      background: var(--primary-light);
+      border: 1.5px solid #bfdbfe;
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-top: 12px;
+    }
+
+    .file-preview.show { display: flex; }
+
+    .file-preview-icon { font-size: 28px; flex-shrink: 0; }
+
+    .file-preview-info { flex: 1; min-width: 0; }
+
+    .file-preview-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .file-preview-size {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .file-remove {
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      color: var(--muted);
+      padding: 6px;
+      border-radius: 6px;
+      line-height: 1;
+      transition: color 0.1s, background 0.1s;
+    }
+
+    .file-remove:hover {
+      color: var(--error);
+      background: rgba(220,38,38,0.08);
+    }
+
+    /* Submit button */
+    .btn-submit {
+      width: 100%;
+      padding: 14px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+      margin-top: 8px;
+      box-shadow: 0 1px 3px rgba(37,99,235,0.3);
+    }
+
+    .btn-submit:hover:not(:disabled) {
+      background: var(--primary-dark);
+      box-shadow: 0 4px 12px rgba(37,99,235,0.35);
+    }
+
+    .btn-submit:active:not(:disabled) { transform: scale(0.985); }
+
+    .btn-submit:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
+    /* Status message */
+    .message {
+      margin-top: 20px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1.5;
+      display: none;
+    }
+
+    .message.success {
+      display: block;
+      background: var(--success-bg);
+      color: var(--success);
+      border: 1px solid var(--success-border);
+    }
+
+    .message.error {
+      display: block;
+      background: var(--error-bg);
+      color: var(--error);
+      border: 1px solid var(--error-border);
+    }
+
+    .footer-note {
+      text-align: center;
+      margin-top: 28px;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+
+    @media (max-width: 560px) {
+      .card { padding: 32px 20px; }
+      h1 { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <div class="header-badge">
+        <span>📋</span> Submission Form
+      </div>
+      <h1>Teaching Plan</h1>
+      <p class="subtitle">Please fill in your name and attach your teaching plan document.</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <form id="planForm" novalidate>
+      <div class="form-group">
+        <label for="fullName">Full Name<span class="required">*</span></label>
+        <input
+          type="text"
+          id="fullName"
+          name="full_name"
+          placeholder="e.g. Jane Smith"
+          required
+          autocomplete="name"
+        >
+      </div>
+
+      <div class="form-group">
+        <label>Upload File<span class="required">*</span></label>
+        <div class="file-zone" id="fileZone">
+          <input type="file" id="fileInput" name="file" required>
+          <div class="file-zone-icon">📁</div>
+          <p class="file-zone-label">
+            <strong>Click to browse</strong> or drag &amp; drop your file here
+          </p>
+          <p class="file-zone-hint">Accepts any file type &bull; Max 100 MB</p>
+        </div>
+
+        <div class="file-preview" id="filePreview">
+          <span class="file-preview-icon" id="fileIcon">📄</span>
+          <div class="file-preview-info">
+            <div class="file-preview-name" id="fileName"></div>
+            <div class="file-preview-size" id="fileSize"></div>
+          </div>
+          <button type="button" class="file-remove" id="fileRemove" title="Remove file">✕</button>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit" id="submitBtn">Submit Teaching Plan</button>
+    </form>
+
+    <div class="message" id="message"></div>
+
+    <p class="footer-note">Your submission is securely stored and only accessible by the administrator.</p>
+  </div>
+
+  <script>
+    const form        = document.getElementById('planForm');
+    const fileZone    = document.getElementById('fileZone');
+    const fileInput   = document.getElementById('fileInput');
+    const filePreview = document.getElementById('filePreview');
+    const fileIcon    = document.getElementById('fileIcon');
+    const fileName    = document.getElementById('fileName');
+    const fileSize    = document.getElementById('fileSize');
+    const fileRemove  = document.getElementById('fileRemove');
+    const submitBtn   = document.getElementById('submitBtn');
+    const message     = document.getElementById('message');
+
+    function fmtSize(bytes) {
+      if (bytes < 1024) return `${bytes} B`;
+      if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+      return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+    }
+
+    function fileTypeIcon(name) {
+      const ext = name.split('.').pop().toLowerCase();
+      return { pdf:'📕', doc:'📘', docx:'📘', xls:'📗', xlsx:'📗',
+               ppt:'📙', pptx:'📙', txt:'📄', jpg:'🖼️', jpeg:'🖼️',
+               png:'🖼️', gif:'🖼️', zip:'🗜️', rar:'🗜️', '7z':'🗜️',
+               mp4:'🎬', mov:'🎬', mp3:'🎵', csv:'📊' }[ext] || '📄';
+    }
+
+    function showFile(file) {
+      fileIcon.textContent  = fileTypeIcon(file.name);
+      fileName.textContent  = file.name;
+      fileSize.textContent  = fmtSize(file.size);
+      filePreview.classList.add('show');
+      fileZone.style.display = 'none';
+    }
+
+    function clearFile() {
+      fileInput.value = '';
+      filePreview.classList.remove('show');
+      fileZone.style.display = '';
+    }
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files[0]) showFile(fileInput.files[0]);
+    });
+
+    fileRemove.addEventListener('click', clearFile);
+
+    fileZone.addEventListener('dragover', e => {
+      e.preventDefault();
+      fileZone.classList.add('drag-over');
+    });
+    fileZone.addEventListener('dragleave', () => fileZone.classList.remove('drag-over'));
+    fileZone.addEventListener('drop', e => {
+      e.preventDefault();
+      fileZone.classList.remove('drag-over');
+      const f = e.dataTransfer.files[0];
+      if (f) {
+        const dt = new DataTransfer();
+        dt.items.add(f);
+        fileInput.files = dt.files;
+        showFile(f);
+      }
+    });
+
+    function showMsg(text, type) {
+      message.textContent = text;
+      message.className = `message ${type}`;
+    }
+
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      message.className = 'message';
+
+      const name = document.getElementById('fullName').value.trim();
+      if (!name) { showMsg('Please enter your full name.', 'error'); return; }
+      if (!fileInput.files[0]) { showMsg('Please select a file to upload.', 'error'); return; }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting…';
+
+      try {
+        const body = new FormData(form);
+        const res  = await fetch('/submit', { method: 'POST', body });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          form.reset();
+          clearFile();
+          showMsg('✓ Your teaching plan was submitted successfully! Thank you.', 'success');
+        } else {
+          showMsg(data.error || 'Submission failed. Please try again.', 'error');
+        }
+      } catch {
+        showMsg('Network error. Please check your connection and try again.', 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Teaching Plan';
+      }
+    });
+  </script>
+</body>
+</html>
