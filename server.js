@@ -6,6 +6,10 @@ const basicAuth = require('express-basic-auth');
 const archiver = require('archiver');
 const path = require('path');
 const fs = require('fs');
+const { Resend } = require('resend');
+
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+const NOTIFY_EMAILS = (process.env.NOTIFY_EMAILS || '').split(',').map(e => e.trim()).filter(Boolean);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -52,7 +56,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
 // ── Public: submit form ────────────────────────────────────────────────────────
-app.post('/submit', upload.single('file'), (req, res) => {
+app.post('/submit', upload.single('file'), async (req, res) => {
   try {
     const fullName = (req.body.full_name || '').trim();
     if (!fullName) return res.status(400).json({ error: 'Full name is required.' });
@@ -64,6 +68,53 @@ app.post('/submit', upload.single('file'), (req, res) => {
     `).run(fullName, req.file.originalname, req.file.filename, req.file.mimetype, req.file.size);
 
     res.json({ success: true });
+
+    // Send email notification (non-blocking — doesn't affect the user's response)
+    if (resend && NOTIFY_EMAILS.length) {
+      try {
+        const fileBuffer = fs.readFileSync(req.file.path);
+        const submittedAt = new Date().toLocaleString('en-GB', { dateStyle: 'full', timeStyle: 'short' });
+
+        await resend.emails.send({
+          from: 'Salem Teaching Plan <onboarding@resend.dev>',
+          to: NOTIFY_EMAILS,
+          subject: `New Teaching Plan Submitted — ${fullName}`,
+          html: `
+            <div style="font-family:sans-serif;max-width:560px;margin:0 auto;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
+              <div style="background:#3730a3;padding:24px;text-align:center;">
+                <h1 style="color:#fff;margin:0;font-size:20px;">Salem School</h1>
+                <p style="color:#c7d2fe;margin:4px 0 0;font-size:14px;">Teaching Plan Submission</p>
+              </div>
+              <div style="padding:28px;">
+                <p style="margin:0 0 20px;font-size:15px;color:#1e293b;">A new teaching plan has been submitted:</p>
+                <table style="width:100%;border-collapse:collapse;font-size:14px;">
+                  <tr>
+                    <td style="padding:10px 12px;background:#f8fafc;border:1px solid #e2e8f0;font-weight:600;color:#64748b;width:130px;">Teacher</td>
+                    <td style="padding:10px 12px;border:1px solid #e2e8f0;color:#1e293b;">${fullName}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:10px 12px;background:#f8fafc;border:1px solid #e2e8f0;font-weight:600;color:#64748b;">File</td>
+                    <td style="padding:10px 12px;border:1px solid #e2e8f0;color:#1e293b;">${req.file.originalname}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:10px 12px;background:#f8fafc;border:1px solid #e2e8f0;font-weight:600;color:#64748b;">Submitted</td>
+                    <td style="padding:10px 12px;border:1px solid #e2e8f0;color:#1e293b;">${submittedAt}</td>
+                  </tr>
+                </table>
+                <p style="margin:20px 0 0;font-size:13px;color:#64748b;">The file is attached to this email. You can also view all submissions in the admin dashboard.</p>
+              </div>
+            </div>
+          `,
+          attachments: [{
+            filename: req.file.originalname,
+            content: fileBuffer
+          }]
+        });
+        console.log(`Email sent to ${NOTIFY_EMAILS.join(', ')} for submission by ${fullName}`);
+      } catch (emailErr) {
+        console.error('Email notification error:', emailErr.message);
+      }
+    }
   } catch (err) {
     console.error('Submit error:', err);
     res.status(500).json({ error: 'Server error. Please try again.' });
